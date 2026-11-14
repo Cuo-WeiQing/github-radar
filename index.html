@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Radar | 自动化开源情报看板</title>
+  <style>
+    :root {
+      --bg-main: #0d1117;
+      --bg-card: #161b22;
+      --bg-card-hover: #1c2128;
+      --border-color: #30363d;
+      --border-accent: #388bfd;
+      --text-main: #c9d1d9;
+      --text-muted: #8b949e;
+      --text-bright: #f0f6fc;
+      --badge-bg: #21262d;
+      --star-color: #e3b341;
+      --score-high: #238636;
+      --score-mid: #1f6feb;
+      --score-low: #8957e5;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-bright);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .stats-pill {
+      background-color: var(--badge-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .stats-pill b {
+      color: #58a6ff;
+    }
+    /* 控制栏 */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+      align-items: center;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 240px;
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-bright);
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box input:focus {
+      border-color: #58a6ff;
+      box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.2);
+    }
+    .filter-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    select, button.filter-btn {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-bright);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+    }
+    select:hover, button.filter-btn:hover {
+      background-color: var(--bg-card-hover);
+      border-color: var(--border-accent);
+    }
+    button.filter-btn.active {
+      background-color: #1f6feb;
+      border-color: #58a6ff;
+      color: #fff;
+    }
+    /* 卡片网格 */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #58a6ff;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .repo-link {
+      color: #58a6ff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      word-break: break-all;
+    }
+    .repo-link:hover {
+      text-decoration: underline;
+    }
+    .score-badge {
+      flex-shrink: 0;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .score-9 { background-color: var(--score-high); }
+    .score-8 { background-color: var(--score-mid); }
+    .score-7 { background-color: var(--score-low); }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--badge-bg);
+      border: 1px solid var(--border-color);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .star-tag b {
+      color: var(--star-color);
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 40px;
+    }
+    .highlight-box {
+      background-color: rgba(22, 27, 34, 0.8);
+      border-left: 3px solid #238636;
+      border-radius: 0 4px 4px 0;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    .highlight-box.tech {
+      border-left-color: #1f6feb;
+    }
+    .highlight-title {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-bright);
+      margin-bottom: 2px;
+    }
+    .card-footer {
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid rgba(48, 54, 61, 0.5);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-github {
+      color: var(--text-bright);
+      background-color: var(--badge-bg);
+      border: 1px solid var(--border-color);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+    .btn-github:hover {
+      border-color: #58a6ff;
+      background-color: #21262d;
+    }
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-top">
+        <h1>🛰️ GitHub Radar <span>自动化开源情报站</span></h1>
+        <div class="stats-pill">
+          入库精选项目: <b id="count-display">0</b> 个 | 更新于 <span>2026-11-14 13:53:12 UTC</span>
+        </div>
+      </div>
+      <p class="subtitle">通过 GitHub Search API 与 LLM 深度精读，剔除面试题库与导航合集，提炼最具生产力的优质开源项目</p>
+    </header>
+
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索项目、技术栈或解决痛点..." oninput="handleFilterChange()">
+      </div>
+      <div class="filter-group">
+        <select id="langSelect" onchange="handleFilterChange()">
+          <option value="">所有编程语言</option>
+          <option value="TypeScript">TypeScript</option><option value="Visual Basic .NET">Visual Basic .NET</option>
+        </select>
+        <select id="scoreSelect" onchange="handleFilterChange()">
+          <option value="0">全部评分 (≥6分)</option>
+          <option value="9">🔥 9分以上 (强烈推荐)</option>
+          <option value="8">⭐ 8分以上 (优质精选)</option>
+          <option value="7" selected>👍 7分以上 (推荐收录)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid" id="projectGrid"></div>
+  </div>
+
+  <script>
+    const allProjects = [{"repo_name": "agentes-chat/agentes-chat", "url": "https://github.com/agentes-chat/agentes-chat", "stars": 1370, "language": "TypeScript", "description": "Open-source, self-hosted Slack alternative where your team and AI agents work together in channels and DMs. Agents run on Claude, ChatGPT/Codex, Gemini or Grok, with MCP tools, their own computer and browser, routines, memory and approvals. Web, desktop and phone apps. Docker Compose + Postgres. AGPL-3.0.", "pain_point": "团队协作中AI代理与人类无法在同一聊天环境内协同工作，缺乏自托管方案。", "tech_highlights": "TypeScript全栈，集成Claude/GPT/Gemini/Grok多模型，支持MCP工具、浏览器与计算机操作、记忆与审批，Docker Compose+Postgres部署，跨Web/桌面/移动端。", "score": 8.0, "created_at": "2026-11-09"}, {"repo_name": "FrigadeHQ/yogurt", "url": "https://github.com/FrigadeHQ/yogurt", "stars": 1368, "language": "TypeScript", "description": "Private AI meeting notes that stay on your computer. A free, open-source alternative to Granola for Mac, Windows and Linux.", "pain_point": "提供本地化、隐私优先的AI会议笔记工具，替代Granola等云端方案", "tech_highlights": "TypeScript跨平台桌面应用，本地AI推理与音频处理，数据不出设备，架构注重隐私与离线可用性", "score": 7.0, "created_at": "2026-11-10"}, {"repo_name": "DevedevT/FFmpeg-GUI-Editor-Windows", "url": "https://github.com/DevedevT/FFmpeg-GUI-Editor-Windows", "stars": 1044, "language": "Visual Basic .NET", "description": "Lightweight portable FFmpeg GUI & lossless video trimmer for Windows (ready-to-use .exe). Supports English, Russian, Chinese, German, French & Italian.", "pain_point": "为Windows用户提供免命令行的FFmpeg图形界面与无损视频裁剪工具", "tech_highlights": "VB.NET开发，封装FFmpeg命令行，便携exe免安装，支持多语言界面与无损裁剪", "score": 7.0, "created_at": "2026-11-12"}];
+
+    function getScoreClass(score) {
+      if (score >= 9) return 'score-9';
+      if (score >= 8) return 'score-8';
+      return 'score-7';
+    }
+
+    function renderCards(list) {
+      const grid = document.getElementById('projectGrid');
+      document.getElementById('count-display').innerText = list.length;
+
+      if (!list || list.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <h3>🛸 未检索到符合条件的项目</h3>
+            <p style="margin-top: 8px;">尝试更换搜索关键词或放宽筛选条件</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = list.map(p => `
+        <div class="card">
+          <div class="card-header">
+            <a class="repo-link" href="${p.url}" target="_blank" rel="noopener noreferrer">${p.repo_name}</a>
+            <span class="score-badge ${getScoreClass(p.score)}">${p.score}分</span>
+          </div>
+
+          <div class="meta-row">
+            <span class="meta-tag star-tag">★ <b>${p.stars.toLocaleString()}</b></span>
+            <span class="meta-tag">💻 ${p.language || 'Other'}</span>
+            <span class="meta-tag">📅 ${p.created_at || '最近'}</span>
+          </div>
+
+          <div class="card-desc">${p.description || '暂无描述'}</div>
+
+          <div class="highlight-box">
+            <div class="highlight-title">🎯 解决痛点</div>
+            <div>${p.pain_point || '暂无详细痛点说明'}</div>
+          </div>
+
+          <div class="highlight-box tech">
+            <div class="highlight-title">💡 技术亮点</div>
+            <div>${p.tech_highlights || '暂无技术栈说明'}</div>
+          </div>
+
+          <div class="card-footer">
+            <span style="font-size: 11px; color: var(--text-muted)">Verified by Radar LLM</span>
+            <a class="btn-github" href="${p.url}" target="_blank" rel="noopener noreferrer">查看源码 ↗</a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function handleFilterChange() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const selectedLang = document.getElementById('langSelect').value;
+      const minScore = parseInt(document.getElementById('scoreSelect').value, 10) || 0;
+
+      const filtered = allProjects.filter(item => {
+        if (selectedLang && item.language !== selectedLang) return false;
+        if (item.score < minScore) return false;
+        if (query) {
+          const content = `${item.repo_name} ${item.description} ${item.pain_point} ${item.tech_highlights}`.toLowerCase();
+          if (!content.includes(query)) return false;
+        }
+        return true;
+      });
+
+      renderCards(filtered);
+    }
+
+    // 初始化渲染
+    window.addEventListener('DOMContentLoaded', () => {
+      handleFilterChange();
+    });
+  </script>
+</body>
+</html>
