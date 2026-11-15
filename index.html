@@ -254,7 +254,7 @@
       <div class="header-top">
         <h1>🛰️ GitHub Radar <span>自动化开源情报站</span></h1>
         <div class="stats-pill">
-          入库精选项目: <b id="count-display">0</b> 个 | 更新于 <span>2026-11-14 14:15:59 UTC</span>
+          入库精选项目: <b id="count-display">0</b> 个 | 更新于 <span>2026-11-15 05:36:28 UTC</span>
         </div>
       </div>
       <p class="subtitle">通过 GitHub Search API 与 LLM 深度精读，剔除面试题库与导航合集，提炼最具生产力的优质开源项目</p>
@@ -267,7 +267,7 @@
       <div class="filter-group">
         <select id="langSelect" onchange="handleFilterChange()">
           <option value="">所有编程语言</option>
-          <option value="TypeScript">TypeScript</option><option value="Visual Basic .NET">Visual Basic .NET</option>
+          <option value="C">C</option><option value="TypeScript">TypeScript</option><option value="Visual Basic .NET">Visual Basic .NET</option>
         </select>
         <select id="scoreSelect" onchange="handleFilterChange()">
           <option value="0">全部评分 (≥6分)</option>
@@ -282,7 +282,7 @@
   </div>
 
   <script>
-    const allProjects = [{"repo_name": "agentes-chat/agentes-chat", "url": "https://github.com/agentes-chat/agentes-chat", "stars": 1370, "language": "TypeScript", "description": "Open-source, self-hosted Slack alternative where your team and AI agents work together in channels and DMs. Agents run on Claude, ChatGPT/Codex, Gemini or Grok, with MCP tools, their own computer and browser, routines, memory and approvals. Web, desktop and phone apps. Docker Compose + Postgres. AGPL-3.0.", "pain_point": "团队协作中AI代理与人类无法在同一聊天环境内协同工作，缺乏自托管方案。", "tech_highlights": "TypeScript全栈，集成Claude/GPT/Gemini/Grok多模型，支持MCP工具、浏览器与计算机操作、记忆与审批，Docker Compose+Postgres部署，跨Web/桌面/移动端。", "score": 8.0, "created_at": "2026-11-09"}, {"repo_name": "FrigadeHQ/yogurt", "url": "https://github.com/FrigadeHQ/yogurt", "stars": 1368, "language": "TypeScript", "description": "Private AI meeting notes that stay on your computer. A free, open-source alternative to Granola for Mac, Windows and Linux.", "pain_point": "提供本地化、隐私优先的AI会议笔记工具，替代Granola等云端方案", "tech_highlights": "TypeScript跨平台桌面应用，本地AI推理与音频处理，数据不出设备，架构注重隐私与离线可用性", "score": 7.0, "created_at": "2026-11-10"}, {"repo_name": "DevedevT/FFmpeg-GUI-Editor-Windows", "url": "https://github.com/DevedevT/FFmpeg-GUI-Editor-Windows", "stars": 1044, "language": "Visual Basic .NET", "description": "Lightweight portable FFmpeg GUI & lossless video trimmer for Windows (ready-to-use .exe). Supports English, Russian, Chinese, German, French & Italian.", "pain_point": "为Windows用户提供免命令行的FFmpeg图形界面与无损视频裁剪工具", "tech_highlights": "VB.NET开发，封装FFmpeg命令行，便携exe免安装，支持多语言界面与无损裁剪", "score": 7.0, "created_at": "2026-11-12"}];
+    const allProjects = [{"repo_name": "adriadam10/mkw-recomp", "url": "https://github.com/adriadam10/mkw-recomp", "stars": 961, "language": "C", "description": "Static recompilation of Mario Kart World (Nintendo Switch 2) to a native PC program", "pain_point": "将Switch 2游戏静态重编译为原生PC程序，解决无模拟器运行高性能游戏的需求。", "tech_highlights": "AArch64到C的静态重编译，NVN2图形API在Vulkan上重实现，SM86着色器预编译为SPIR-V，SDK函数替换，支持x86-64和AArch64。", "score": 9.0, "created_at": "2026-11-09"}, {"repo_name": "agentes-chat/agentes-chat", "url": "https://github.com/agentes-chat/agentes-chat", "stars": 1370, "language": "TypeScript", "description": "Open-source, self-hosted Slack alternative where your team and AI agents work together in channels and DMs. Agents run on Claude, ChatGPT/Codex, Gemini or Grok, with MCP tools, their own computer and browser, routines, memory and approvals. Web, desktop and phone apps. Docker Compose + Postgres. AGPL-3.0.", "pain_point": "团队协作中AI代理与人类无法在同一聊天环境内协同工作，缺乏自托管方案。", "tech_highlights": "TypeScript全栈，集成Claude/GPT/Gemini/Grok多模型，支持MCP工具、浏览器与计算机操作、记忆与审批，Docker Compose+Postgres部署，跨Web/桌面/移动端。", "score": 8.0, "created_at": "2026-11-09"}, {"repo_name": "FrigadeHQ/yogurt", "url": "https://github.com/FrigadeHQ/yogurt", "stars": 1368, "language": "TypeScript", "description": "Private AI meeting notes that stay on your computer. A free, open-source alternative to Granola for Mac, Windows and Linux.", "pain_point": "提供本地化、隐私优先的AI会议笔记工具，替代Granola等云端方案", "tech_highlights": "TypeScript跨平台桌面应用，本地AI推理与音频处理，数据不出设备，架构注重隐私与离线可用性", "score": 7.0, "created_at": "2026-11-10"}, {"repo_name": "DevedevT/FFmpeg-GUI-Editor-Windows", "url": "https://github.com/DevedevT/FFmpeg-GUI-Editor-Windows", "stars": 1044, "language": "Visual Basic .NET", "description": "Lightweight portable FFmpeg GUI & lossless video trimmer for Windows (ready-to-use .exe). Supports English, Russian, Chinese, German, French & Italian.", "pain_point": "为Windows用户提供免命令行的FFmpeg图形界面与无损视频裁剪工具", "tech_highlights": "VB.NET开发，封装FFmpeg命令行，便携exe免安装，支持多语言界面与无损裁剪", "score": 7.0, "created_at": "2026-11-12"}];
 
     function getScoreClass(score) {
       if (score >= 9) return 'score-9';
